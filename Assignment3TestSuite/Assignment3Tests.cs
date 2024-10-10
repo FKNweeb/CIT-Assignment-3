@@ -197,7 +197,7 @@ namespace Assignment3TestSuite
             Assert.Equal("Hello World", response.Body);
 
         }
-#if RUN_ALL_TESTS
+
         //////////////////////////////////////////////////////////
         /// 
         /// Testing API 
@@ -220,12 +220,15 @@ namespace Assignment3TestSuite
 
             client.SendRequest(request.ToJson());
             var response = client.ReadResponse();
-            
+
             var expectedResponse = new Response { Status = "4 Bad Request" };
 
             Assert.Equal(expectedResponse.ToJson().ToLower(), response.ToJson().ToLower());
-        }
 
+            
+
+        }
+#if RUN_ALL_TESTS
         [Fact]
         public void Constraint_RequestWithInvalidPathId_StatusBadRequest()
         {
