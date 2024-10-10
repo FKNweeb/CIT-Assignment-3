@@ -29,7 +29,7 @@ while (true)
         var response = new Response();
         if (msg == "{}")
         {
-            response.Status = "missing method";
+            response.Status = "missing method,  missing date";
         }
 
         else
@@ -40,7 +40,20 @@ while (true)
             {
                 response.Status = "illegal method";
             }
+            else
+            if(request.Method == "create" || request.Method == "read" || request.Method == "update" || request.Method == "delete") 
+            {
+                if (request.Body == "")
+                {
+                    response.Status = "missing resource";
+                }
+                else if (!long.TryParse(request.Date, out long timestamp) && (timestamp >= 0 && timestamp <= DateTimeOffset.UtcNow.ToUnixTimeSeconds()))
+                {
+                    response.Status = "illegal date";
+                }
+            }
         }
+               
 
         var json = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         Console.WriteLine(json);

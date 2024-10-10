@@ -77,7 +77,7 @@ namespace Assignment3TestSuite
             Assert.Contains("illegal method", response.Status.ToLower());
         }
 
-#if RUN_ALL_TESTS
+
         [Theory]
         [InlineData("create")]
         [InlineData("read")]
@@ -132,7 +132,7 @@ namespace Assignment3TestSuite
 
             Assert.Contains("illegal date", response.Status.ToLower());
         }
-
+#if RUN_ALL_TESTS
         /* Body Tests    */
 
         [Theory]
