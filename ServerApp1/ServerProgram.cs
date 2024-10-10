@@ -75,17 +75,89 @@ while (true)
                     if (!request.Path.StartsWith("/api/categories"))
                     {
                         response.Status = "4 Bad Request";
-                        var options = new JsonSerializerOptions
+                    }
+                    else
+                    {
+                        string prefix = "/api/categories";
+                        var partUrl = request.Path.Substring(prefix.Length);
+                        Console.WriteLine(partUrl);
+                        if (partUrl == "")
                         {
-                            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault
-                        };
+                            if ( request.Method == "update" || request.Method == "delete")
+                            {
+                                response.Status = "4 Bad Request";
+                            }
+                            else if (request.Method == "read")
+                            {
+                                response.Status = "1 Ok";
+                                //response.Body = "";
+                                response.Body = categories.ToJson();
+                            }
+                            else
+                            {
+                                Console.WriteLine("Need to create new category");
+                            } 
+                        }
+                        else
+                        {
+                            if (partUrl.StartsWith("/"))
+                            {
+                                if (request.Method == "create")
+                                {
+                                    response.Status = "4 Bad Request";
+                                }
+                                else
+                                {
+                                    partUrl = partUrl.TrimStart('/');
 
-                        string jsonResponse = JsonSerializer.Serialize(response, options);
-                        Console.WriteLine(jsonResponse);
+                                    if (int.TryParse(partUrl, out int reqCid))
+                                    {
+                                        //Console.WriteLine("we get Cid to read,delete and update");
+                                        if(categories.Exists(c => c.cid == reqCid))
+                                        {
+                                            //Console.WriteLine("we can do read,delete and update");
+                                            if(request.Method == "read")
+                                            {
+                                                response.Status = "1 Ok";
+                                                //response.Body = "";
+                                                Console.WriteLine(categories.FirstOrDefault(c => c.cid == reqCid));
+                                                response.Body = categories.FirstOrDefault(c => c.cid == reqCid).ToJson();
+                                            }
+                                            else if (request.Method == "update")
+                                            {
+                                                var updCat = categories.FirstOrDefault(c => c.cid == reqCid);
+                                                var reqBody = request.Body.FromJson<Category>();
+                                                updCat.name = reqBody.name;
+                                                response.Status = "3 updated";
+                                                //response.Body = "";
+                                                response.Body = updCat.ToJson();
+                                            }
+                                            else if (request.Method == "delete")
+                                            {
+                                                categories.RemoveAll(c => c.cid == reqCid);
+                                                response.Status = "1 Ok";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            response.Status = "5 not found";
+                                        }
 
+                                    }
+                                    else
+                                    {
+                                        response.Status = "4 Bad Request";
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Console.WriteLine("Bad path");
+                                response.Status = "4 Bad Request";
+                            }   
+                        }       
                     }
                 }
-
             }
         }
 
@@ -97,7 +169,7 @@ while (true)
             Console.WriteLine($"cid: {category.cid}, name: {category.name}");
         }*/
 
-        var json = JsonSerializer.Serialize(response, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var json =response.ToJson();
         Console.WriteLine(json);
 
         buffer = Encoding.UTF8.GetBytes(json);

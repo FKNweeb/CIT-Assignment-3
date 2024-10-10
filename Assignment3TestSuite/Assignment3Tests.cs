@@ -228,7 +228,7 @@ namespace Assignment3TestSuite
             
 
         }
-#if RUN_ALL_TESTS
+
         [Fact]
         public void Constraint_RequestWithInvalidPathId_StatusBadRequest()
         {
@@ -490,7 +490,7 @@ namespace Assignment3TestSuite
             Assert.Contains("5 not found", response.Status.ToLower());
         }
 
-
+#if RUN_ALL_TESTS
         /* Create Tests  */
 
         [Fact]
