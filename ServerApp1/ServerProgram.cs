@@ -93,9 +93,13 @@ while (true)
                                 //response.Body = "";
                                 response.Body = categories.ToJson();
                             }
-                            else
+                            else if (request.Method == "create")
                             {
-                                Console.WriteLine("Need to create new category");
+                                var reqBody = request.Body.FromJson<Category>();
+                                int lastCid = categories.Max(c => c.cid);
+                                categories.Add(new Category { cid = lastCid + 1, name = reqBody.name });
+                                response.Status = "2 Created";
+                                response.Body = categories.FirstOrDefault(c => c.cid == lastCid + 1).ToJson();
                             } 
                         }
                         else
@@ -152,7 +156,6 @@ while (true)
                             }
                             else
                             {
-                                Console.WriteLine("Bad path");
                                 response.Status = "4 Bad Request";
                             }   
                         }       
@@ -160,25 +163,11 @@ while (true)
                 }
             }
         }
-
-
-        /*categories.RemoveAll(c => c.cid == 2);
-        foreach (var category in categories)
-        {
-            if(category.cid==2)
-            Console.WriteLine($"cid: {category.cid}, name: {category.name}");
-        }*/
-
-        var json =response.ToJson();
+       var json =response.ToJson();
         Console.WriteLine(json);
 
         buffer = Encoding.UTF8.GetBytes(json);
         stream.Write(buffer);
-
-
-
-
-
     }
     catch { } 
 }
@@ -193,35 +182,6 @@ while (true)
         public static T FromJson<T>(this string element)
         {
             return JsonSerializer.Deserialize<T>(element, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        }
-
-        public static void SendRequest(this TcpClient client, string request)
-        {
-            var msg = Encoding.UTF8.GetBytes(request);
-            client.GetStream().Write(msg, 0, msg.Length);
-        }
-
-        public static Response ReadResponse(this TcpClient client)
-        {
-            var strm = client.GetStream();
-            //strm.ReadTimeout = 250;
-            byte[] resp = new byte[2048];
-            using (var memStream = new MemoryStream())
-            {
-                int bytesread = 0;
-                do
-                {
-                    bytesread = strm.Read(resp, 0, resp.Length);
-                    memStream.Write(resp, 0, bytesread);
-
-                } while (bytesread == 2048);
-
-                var responseData = Encoding.UTF8.GetString(memStream.ToArray());
-
-
-                //return JsonSerializer.Deserialize<Response>(responseData);
-                // if the naming policy is used you need to do the same on the server side
-                return JsonSerializer.Deserialize<Response>(responseData, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-            }
-        }
+        }        
     }
+

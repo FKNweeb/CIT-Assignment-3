@@ -490,7 +490,7 @@ namespace Assignment3TestSuite
             Assert.Contains("5 not found", response.Status.ToLower());
         }
 
-#if RUN_ALL_TESTS
+
         /* Create Tests  */
 
         [Fact]
@@ -578,7 +578,7 @@ namespace Assignment3TestSuite
             Assert.Contains("5 not found", response.Status.ToLower());
         }
 
-#endif
+
 
 
         /**********************************************************
