@@ -132,7 +132,7 @@ namespace Assignment3TestSuite
 
             Assert.Contains("illegal date", response.Status.ToLower());
         }
-#if RUN_ALL_TESTS
+
         /* Body Tests    */
 
         [Theory]
@@ -197,7 +197,7 @@ namespace Assignment3TestSuite
             Assert.Equal("Hello World", response.Body);
 
         }
-
+#if RUN_ALL_TESTS
         //////////////////////////////////////////////////////////
         /// 
         /// Testing API 

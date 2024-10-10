@@ -41,9 +41,9 @@ while (true)
                 response.Status = "illegal method";
             }
             else
-            if(request.Method == "create" || request.Method == "read" || request.Method == "update" || request.Method == "delete") 
+            if(request.Method == "create" || request.Method == "read" || request.Method == "update" || request.Method == "delete" || request.Method == "echo") 
             {
-                if (request.Body == "")
+                if (request.Body == "" && request.Path == "")
                 {
                     response.Status = "missing resource";
                 }
@@ -51,6 +51,19 @@ while (true)
                 {
                     response.Status = "illegal date";
                 }
+                else if (request.Body == "")
+                {
+                    response.Status = "missing body";
+                }
+                else if (request.Body == "Hello World" && request.Method != "echo")
+                {
+                    response.Status = "illegal body";
+                }
+                else if (request.Method == "echo")
+                {
+                    response.Body = request.Body;
+                }
+
             }
         }
                
