@@ -42,7 +42,7 @@ while (true)
         else
 
         {
-            var request = JsonSerializer.Deserialize<Request>(msg, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            var request = msg.FromJson<Request>(); 
             if (request.Method == "xxxx")
             {
                 response.Status = "illegal method";
