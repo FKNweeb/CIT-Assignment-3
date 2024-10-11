@@ -6,6 +6,11 @@ using System.Text.RegularExpressions;
 
 public class Server{
     private readonly int _port;
+    private static List<Category> _categories = new List<Category> {
+        new Category { cid = 1, name = "Beverages"},
+        new Category { cid = 2, name = "Condiments"},
+        new Category { cid = 3, name = "Confections"}
+    };
     public Server(int port){
         _port = port;
     }
@@ -84,6 +89,42 @@ public class Server{
                     var json = ToJson(response);
                     WriteToStream(stream, json);
                  }
+                 switch (request.Method)
+                 {
+                    case "update":
+                        if (UpdateData( request.Path, request.Body)){
+                            response.Status = "3 Updated";
+                            var json = ToJson(response);
+                            WriteToStream(stream, json);
+                        } else {
+                            response.Status = "5 Not Found";
+                            var json = ToJson(response);
+                            WriteToStream(stream, json);
+                        }
+                        break;
+                    case "read":
+                        response.Status = "1 Ok";
+                        var body = ReadData(request.Path);
+                        response.Body = body;
+                        if (body == "") {
+                            response.Status = "5 Not Found";
+                        }
+                        var json2 = ToJson(response);
+                        WriteToStream(stream, json2);
+                        break;
+                    case "create":
+                        response.Status = "2 Created";
+                        response.Body = Add(request.Body);
+                        var json3 = ToJson(response);
+                        WriteToStream(stream, json3);
+                        break;
+                    case "delete":
+                        response.Status = "1 Ok";
+                        if (!Delete(request.Path)) { response.Status = "5 Not found"; }
+                        var json4 = ToJson(response);
+                        WriteToStream(stream, json4);
+                        break;
+                 }
             }
         }
         catch (Exception)
@@ -121,9 +162,10 @@ public class Server{
 
         return false; // If parsing fails, it's not a valid Unix timestamp
     }
-    public static bool RequiresBody(string input){
-        if (input == "update") { return true; }
-        else if (input == "create") { return true; }
+    public static bool RequiresBody(string method){
+        if (method == "update") { return true; }
+        else if (method == "create") { return true; }
+        else if (method == "echo") { return true; }
         return false;
     }
     public static bool IsJsonType(string input){
@@ -145,9 +187,45 @@ public class Server{
         string[] notAllowedId = { "create" };
         var r = Regex.Match(path, "^/api/categories(/[1-9]*)?$");
         
+
         bool isIdPresent = r.Groups[1].Success;
+        if (!r.Groups[0].Success) { return false; }
         if (!isIdPresent && requiresId.Contains(method)) { return false; }
         else if (isIdPresent && notAllowedId.Contains(method)) { return false; }
         return true;
     } 
+    public static bool UpdateData(string path, string body){
+        var match = Regex.Match(path, "[0-9]+$");
+        Category jsonBody = JsonSerializer.Deserialize<Category>(body);
+        if (!DoesExist(jsonBody.cid)) { return false; }
+        if(!DoesExist(int.Parse(match.Value))) { return false; }
+        _categories[jsonBody.cid].name = jsonBody.name;
+        return true;
+    }
+    public static string ReadData(string path){
+        var match = Regex.Match(path, "[0-9]+$");
+        if (match.Success) { 
+            if (DoesExist(int.Parse(match.Value))) { 
+                if (match.Value == "1") { return JsonSerializer.Serialize(_categories[int.Parse(match.Value)-1]); }
+                return JsonSerializer.Serialize(_categories[int.Parse(match.Value)]); 
+            }
+            return "";
+        }
+        return JsonSerializer.Serialize(_categories);
+    }
+    public static bool DoesExist(int index){
+        return index <= _categories.Capacity;
+    }
+    public static string Add(string body){
+        Category jsonBody = JsonSerializer.Deserialize<Category>(body);
+        _categories.Add(new Category { cid = _categories.Capacity, name = jsonBody.name });
+        return JsonSerializer.Serialize(_categories[_categories.Capacity - 1]);
+    }
+    public static bool Delete(string path){
+        var match = Regex.Match(path, "[0-9]+$");
+        var value = int.Parse(match.Value);
+        if (!DoesExist(value)) { return false; }
+        _categories.RemoveAt(value - 1);
+        return true;
+    }
 }
