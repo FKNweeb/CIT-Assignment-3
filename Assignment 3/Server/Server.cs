@@ -199,7 +199,7 @@ public class Server{
         Category jsonBody = JsonSerializer.Deserialize<Category>(body);
         if (!DoesExist(jsonBody.cid)) { return false; }
         if(!DoesExist(int.Parse(match.Value))) { return false; }
-        _categories[jsonBody.cid].name = jsonBody.name;
+        _categories[jsonBody.cid-1].name = jsonBody.name;
         return true;
     }
     public static string ReadData(string path){
