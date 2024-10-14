@@ -205,9 +205,7 @@ public class Server{
     public static string ReadData(string path){
         var match = Regex.Match(path, "[0-9]+$");
         if (match.Success) { 
-            if (DoesExist(int.Parse(match.Value))) { 
-                if (match.Value == "1") { return JsonSerializer.Serialize(_categories[int.Parse(match.Value)-1]); }
-                return JsonSerializer.Serialize(_categories[int.Parse(match.Value)]); 
+            if (DoesExist(int.Parse(match.Value))) { return JsonSerializer.Serialize(_categories[int.Parse(match.Value)-1]); 
             }
             return "";
         }
