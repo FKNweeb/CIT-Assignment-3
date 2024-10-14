@@ -40,92 +40,67 @@ public class Server{
 
             if (msg == "{}") { 
                 response.Status = "missing method missing date";
-                var json = ToJson(response);
-                WriteToStream(stream, json);
             } else {
-                
                 var request = FromJson(msg);
 
                 string[] validMethods = {"create", "read", "update", "delete", "echo"};
 
                 if (!validMethods.Contains(request.Method)) { 
                     response.Status = "illegal method";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (request.Path == null && !(request.Method == "echo")) {
                     response.Status = "missing resource";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (request.Date == null){
                     response.Status = "missing date";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (!IsValidUnixTimestamp(request.Date)){
                     response.Status = "illegal date";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (RequiresBody(request.Method) && request.Body == null){
                     response.Status = "missing body";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (request.Method == "echo"){
                     response.Status = "1 OK";
                     response.Body = request.Body;
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (RequiresBody(request.Method) && !IsJsonType(request.Body)){
                     response.Status = "illegal body";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
                  else if (!ValidatePath(request.Method, request.Path)){
                     response.Status = "4 Bad Request";
-                    var json = ToJson(response);
-                    WriteToStream(stream, json);
                  }
-                 switch (request.Method)
-                 {
-                    case "update":
-                        if (UpdateData( request.Path, request.Body)){
-                            response.Status = "3 Updated";
-                            var json = ToJson(response);
-                            WriteToStream(stream, json);
-                        } else {
-                            response.Status = "5 Not Found";
-                            var json = ToJson(response);
-                            WriteToStream(stream, json);
-                        }
-                        break;
-                    case "read":
-                        response.Status = "1 Ok";
-                        var body = ReadData(request.Path);
-                        response.Body = body;
-                        if (body == "") {
-                            response.Status = "5 Not Found";
-                        }
-                        var json2 = ToJson(response);
-                        WriteToStream(stream, json2);
-                        break;
-                    case "create":
-                        response.Status = "2 Created";
-                        response.Body = Add(request.Body);
-                        var json3 = ToJson(response);
-                        WriteToStream(stream, json3);
-                        break;
-                    case "delete":
-                        response.Status = "1 Ok";
-                        if (!Delete(request.Path)) { response.Status = "5 Not found"; }
-                        var json4 = ToJson(response);
-                        WriteToStream(stream, json4);
-                        break;
-                 }
+                 else {
+                    switch (request.Method)
+                    {
+                        case "update":
+                            if (UpdateData( request.Path, request.Body)){
+                                response.Status = "3 Updated";
+                            } else {
+                                response.Status = "5 Not Found";
+                            }
+                            break;
+                        case "read":
+                            response.Status = "1 Ok";
+                            var body = ReadData(request.Path);
+                            response.Body = body;
+                            if (body == "") {
+                                response.Status = "5 Not Found";
+                            }
+                            break;
+                        case "create":
+                            response.Status = "2 Created";
+                            response.Body = Add(request.Body);
+                            break;
+                        case "delete":
+                            response.Status = "1 Ok";
+                            if (!Delete(request.Path)) { response.Status = "5 Not found"; }
+                            break;
+                    }
+                }
             }
+            var json = ToJson(response);
+            WriteToStream(stream, json);
         }
         catch (Exception)
         {
